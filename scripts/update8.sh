@@ -24,7 +24,7 @@ set -euo pipefail
 echo "Common defs"
 
 # shellcheck disable=SC1091
-source import-common.sh
+modules=(corba langtools jaxp jaxws nashorn jdk)
 
 rm -rf $WORKSPACE/openj9
 rm -rf $WORKSPACE/openjdk
@@ -57,10 +57,10 @@ git filter-branch -f --index-filter 'git rm -r -f -q --cached --ignore-unmatch .
 cd ..
 git pull jdk8u
 git fetch --tags jdk8u
-rm -rf jdk8u.git
-
 NEWTAG=$(git describe --abbrev=0 --tags)
 echo "Latest openjdk level is $NEWTAG"
+git reset --hard $NEWTAG
+rm -rf jdk8u.git
 
 if [ $NEWTAG != $OLDTAG ]
 then
@@ -85,6 +85,8 @@ then
       cd ..
       echo "GIT pull on $module"
       git pull $module
+      git fetch --tags $module
+      git reset --hard $NEWTAG
       rm -rf $module.git
       cd $WORKSPACE/openj9/$J9REPOSITORY 
       git fetch $WORKSPACE/openjdk/$module
